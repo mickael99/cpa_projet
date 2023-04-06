@@ -1,11 +1,20 @@
 const canvas = document.getElementById('window');
 const ctx = canvas.getContext('2d');
 
+class snakePart {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+}
+
 let score = 0;  
 
 //position serpent 
 let xSnake = canvas.width / 2;
 let ySnake = canvas.width / 2;
+
+let refresh = 8;
 
 //stat serpent
 let health = 5;
@@ -13,6 +22,8 @@ let velocity = 0.8;
 let dx = 0; 
 let dy = 0;
 let sizeSnake = 20;
+let snakeTail = [];
+let sizeTail = 0;
 
 //goutte d'eau
 let xWaterDrop = 0;
@@ -21,26 +32,41 @@ let sizeWaterDrop = 30;
 let isThere = false;
 
 function gameOver() {
-	//a coder
+	clearTimeout(id);
 } 
 
 function gameLoop() {
 	initScreen();
-	setTimeout(gameLoop, 1);
+	let id = setTimeout(gameLoop, 1);
+}
+
+function speed() {
+	let random = Math.random(); 
+	if(random > 0.5) { 
+		velocity += 0.1;
+	}
 }
 
 function initScreen() {
-	const background = new Image();
-	background.src = 'images/background.png'; 
+	const background = new Image(); 
 	background.onload = initBackground(background);
 } 
 
 function initBackground(background) {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	background.src = 'images/background.png';
 	ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+	
+	mooveSnake();
+	if(checkCollisionWithWaterDrop()) {
+		sizeTail++;
+		isThere = false; 
+		score++;
+		speed();
+	}
 	sapwnWaterDrop();
 	initSnake();
-	mooveSnake();
+	spawnSnakePart();
 	if(checkCollisionWithBordureWindow()) {
 		gameOver();
 	}
@@ -51,6 +77,7 @@ function sapwnWaterDrop() {
 		xWaterDrop = Math.floor(Math.random() * (canvas.width - sizeWaterDrop));
 		yWaterDrop = Math.floor(Math.random() * (canvas.height - sizeWaterDrop));
 	}
+	
 	let waterDrop = new Image();  
 	waterDrop.src = 'images/water_drop.png';
 	waterDrop.onload = function() {
@@ -64,9 +91,42 @@ function initSnake() {
 	ctx.fillRect(xSnake, ySnake, sizeSnake, sizeSnake);
 }
 
+function spawnSnakePart() {
+	ctx.fillStyle = 'green';
+	for(let i = snakeTail.length - 1; i >= 0; i--) {
+		if(i == 0) {
+			ctx.fillRect(snakeTail[i].x, snakeTail[i].y, sizeSnake, sizeSnake);
+			snakeTail[i].x = xSnake;
+			snakeTail[i].y = ySnake;
+		}
+		else {
+			ctx.fillRect(snakeTail[i].x, snakeTail[i].y, sizeSnake, sizeSnake);
+			snakeTail[i].x = snakeTail[i - 1].x;
+			snakeTail[i].y = snakeTail[i - 1].y;
+		}
+	}
+
+	if(snakeTail.length == 0) {
+		snakeTail.push(new snakePart(xSnake, ySnake));
+	}
+	else {
+		let lastIndex = snakeTail.length - 1;
+		snakeTail.push(new snakePart(snakeTail[lastIndex].x, 
+			snakeTail[lastIndex].y));
+	}
+
+
+	if(snakeTail.length > sizeTail) {
+		console.log("je retire un element");
+		snakeTail.shift();
+	}
+	console.log("size -> " + sizeTail);
+	console.log("length -> " + snakeTail.length);
+}
+
 function mooveSnake() {
-	xSnake = xSnake + dx;
-	ySnake = ySnake + dy;
+	xSnake +=  dx;
+	ySnake += dy;
 }
 
 function checkCollisionWithBordureWindow() {
@@ -90,7 +150,13 @@ function checkCollisionWithBordureWindow() {
 }
 
 function checkCollisionWithWaterDrop() {
-
+	if((xWaterDrop - xSnake < sizeSnake) && 
+		(xSnake - xWaterDrop < sizeSnake) &&
+		(ySnake + sizeSnake > yWaterDrop) &&
+		(ySnake < yWaterDrop + sizeWaterDrop)) {
+			return true;
+	}
+	return false;
 }
 
 function pressKeyDown() {
