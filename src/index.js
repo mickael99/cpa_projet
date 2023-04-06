@@ -1,8 +1,6 @@
 const canvas = document.getElementById('window');
 const ctx = canvas.getContext('2d');
 
-let speedRefresh = 7; 
-
 let score = 0;  
 
 //position serpent 
@@ -11,7 +9,7 @@ let ySnake = canvas.width / 2;
 
 //stat serpent
 let health = 5;
-let velocity = 20;  
+let velocity = 0.8;  
 let dx = 0; 
 let dy = 0;
 let sizeSnake = 20;
@@ -28,7 +26,7 @@ function gameOver() {
 
 function gameLoop() {
 	initScreen();
-	setTimeout(gameLoop, 1000 / speedRefresh);
+	setTimeout(gameLoop, 1);
 }
 
 function initScreen() {
