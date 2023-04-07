@@ -69,7 +69,8 @@ function initBackground(background) {
 	initSnake();
 	spawnSnakePart();
 	mooveSnake();
-	if(checkCollisionWithBordureWindow()) {
+	if(checkCollisionWithBordureWindow() ||
+		checkCollisionWithTail()) {
 		gameOver();
 	}
 	printCoordonne();
@@ -159,6 +160,18 @@ function checkCollisionWithWaterDrop() {
 		(ySnake + sizeSnake > yWaterDrop) &&
 		(ySnake < yWaterDrop + sizeWaterDrop)) {
 			return true;
+	}
+	return false;
+}
+
+function checkCollisionWithTail() {
+	for(let i = 0; i < snakeTail.length; i++) {
+		if((xSnake + sizeSnake > snakeTail[i].x) &&
+			(xSnake < snakeTail[i].x + sizeSnake) &&
+			(ySnake  < snakeTail[i].y + sizeSnake) &&
+			(ySnake + sizeSnake > snakeTail[i].y)) {
+				return true;
+		}
 	}
 	return false;
 }
