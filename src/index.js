@@ -18,7 +18,7 @@ let refresh = 8;
 
 //stat serpent
 let health = 5;
-let velocity = 0.8;  
+let velocity = 1;  
 let dx = 0; 
 let dy = 0;
 let sizeSnake = 20;
@@ -30,6 +30,9 @@ let xWaterDrop = 0;
 let yWaterDrop = 0; 
 let sizeWaterDrop = 30;
 let isThere = false;
+
+let xOld = 0;
+let yOld = 0;
 
 function gameOver() {
 	clearTimeout(id);
@@ -57,7 +60,6 @@ function initBackground(background) {
 	background.src = 'images/background.png';
 	ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 	
-	mooveSnake();
 	if(checkCollisionWithWaterDrop()) {
 		sizeTail++;
 		isThere = false; 
@@ -67,6 +69,7 @@ function initBackground(background) {
 	sapwnWaterDrop();
 	initSnake();
 	spawnSnakePart();
+	mooveSnake();
 	if(checkCollisionWithBordureWindow()) {
 		gameOver();
 	}
@@ -93,11 +96,11 @@ function initSnake() {
 
 function spawnSnakePart() {
 	ctx.fillStyle = 'green';
-	for(let i = snakeTail.length - 1; i >= 0; i--) {
+	for(let i = 0; i < snakeTail.length; i++) {
 		if(i == 0) {
 			ctx.fillRect(snakeTail[i].x, snakeTail[i].y, sizeSnake, sizeSnake);
-			snakeTail[i].x = xSnake;
-			snakeTail[i].y = ySnake;
+			snakeTail[i].x = xOld;
+			snakeTail[i].y = yOld;
 		}
 		else {
 			ctx.fillRect(snakeTail[i].x, snakeTail[i].y, sizeSnake, sizeSnake);
@@ -107,7 +110,7 @@ function spawnSnakePart() {
 	}
 
 	if(snakeTail.length == 0) {
-		snakeTail.push(new snakePart(xSnake, ySnake));
+		snakeTail.push(new snakePart(xOld, yOld));
 	}
 	else {
 		let lastIndex = snakeTail.length - 1;
@@ -125,6 +128,8 @@ function spawnSnakePart() {
 }
 
 function mooveSnake() {
+	xOld = xSnake;
+	yOld = ySnake;
 	xSnake +=  dx;
 	ySnake += dy;
 }
