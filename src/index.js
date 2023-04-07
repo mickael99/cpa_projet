@@ -18,7 +18,7 @@ let refresh = 8;
 
 //stat serpent
 let health = 5;
-let velocity = 1;  
+let velocity = 20;  
 let dx = 0; 
 let dy = 0;
 let sizeSnake = 20;
@@ -31,22 +31,20 @@ let yWaterDrop = 0;
 let sizeWaterDrop = 30;
 let isThere = false;
 
-let xOld = 0;
-let yOld = 0;
-
 function gameOver() {
 	clearTimeout(id);
 } 
 
 function gameLoop() {
 	initScreen();
-	let id = setTimeout(gameLoop, 1);
+	let id = setTimeout(gameLoop, 1000 / refresh);
 }
 
+//pas encore dispo
 function speed() {
 	let random = Math.random(); 
 	if(random > 0.5) { 
-		velocity += 0.1;
+		velocity += 1;
 	}
 }
 
@@ -58,13 +56,14 @@ function initScreen() {
 function initBackground(background) {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	background.src = 'images/background.png';
-	ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+	ctx.drawImage(background, 0, 0, 
+		canvas.width, canvas.height);
 	
 	if(checkCollisionWithWaterDrop()) {
 		sizeTail++;
 		isThere = false; 
 		score++;
-		speed();
+		//speed();
 	}
 	sapwnWaterDrop();
 	initSnake();
@@ -73,18 +72,22 @@ function initBackground(background) {
 	if(checkCollisionWithBordureWindow()) {
 		gameOver();
 	}
+	printCoordonne();
 }
 
 function sapwnWaterDrop() {
 	if(isThere == false) {
-		xWaterDrop = Math.floor(Math.random() * (canvas.width - sizeWaterDrop));
-		yWaterDrop = Math.floor(Math.random() * (canvas.height - sizeWaterDrop));
+		xWaterDrop = Math.floor(Math.random() * 
+			(canvas.width - sizeWaterDrop));
+		yWaterDrop = Math.floor(Math.random() * 
+			(canvas.height - sizeWaterDrop));
 	}
 	
 	let waterDrop = new Image();  
 	waterDrop.src = 'images/water_drop.png';
 	waterDrop.onload = function() {
-		ctx.drawImage(waterDrop, xWaterDrop, yWaterDrop, sizeWaterDrop, sizeWaterDrop);
+		ctx.drawImage(waterDrop, xWaterDrop, 
+			yWaterDrop, sizeWaterDrop, sizeWaterDrop);
 	}
 	isThere = true;
 }
@@ -96,11 +99,19 @@ function initSnake() {
 
 function spawnSnakePart() {
 	ctx.fillStyle = 'green';
-	for(let i = 0; i < snakeTail.length; i++) {
+	//init de toutes les parties de la queue du serpent sauf la première queue
+	if(sizeTail > snakeTail.length && sizeTail > 1) {
+		let lastIndex = snakeTail.length - 1;
+		snakeTail.push(new snakePart(snakeTail[lastIndex].x, 
+			snakeTail[lastIndex].y));
+	}
+
+	//deplacement de toutes les parties du serpent sauf la tête 
+	for(let i = snakeTail.length - 1; i >= 0; i--) {
 		if(i == 0) {
 			ctx.fillRect(snakeTail[i].x, snakeTail[i].y, sizeSnake, sizeSnake);
-			snakeTail[i].x = xOld;
-			snakeTail[i].y = yOld;
+			snakeTail[i].x = xSnake;
+			snakeTail[i].y = ySnake;
 		}
 		else {
 			ctx.fillRect(snakeTail[i].x, snakeTail[i].y, sizeSnake, sizeSnake);
@@ -109,27 +120,15 @@ function spawnSnakePart() {
 		}
 	}
 
-	if(snakeTail.length == 0) {
-		snakeTail.push(new snakePart(xOld, yOld));
-	}
-	else {
-		let lastIndex = snakeTail.length - 1;
-		snakeTail.push(new snakePart(snakeTail[lastIndex].x, 
-			snakeTail[lastIndex].y));
+	if(sizeTail == 1 && sizeTail > snakeTail.length) {
+		snakeTail.push(new snakePart(xSnake, ySnake));
 	}
 
-
-	if(snakeTail.length > sizeTail) {
-		console.log("je retire un element");
-		snakeTail.shift();
-	}
-	console.log("size -> " + sizeTail);
-	console.log("length -> " + snakeTail.length);
+	//console.log("length -> " + snakeTail.length);
+	//console.log("size -> " + sizeTail);
 }
 
 function mooveSnake() {
-	xOld = xSnake;
-	yOld = ySnake;
 	xSnake +=  dx;
 	ySnake += dy;
 }
@@ -187,6 +186,14 @@ function pressKeyDown() {
 	if(event.keyCode == 39 && dx >= 0) {
 		dx = velocity; 
 		dy = 0;  
+	}
+}
+
+function printCoordonne() {
+	for(let i = 0; i < snakeTail.length; i++) {
+		console.log("numéro " + i);
+		console.log("	x -> " + snakeTail[i].x);
+		console.log("	y -> \n" + snakeTail[i].y);
 	}
 }
 
