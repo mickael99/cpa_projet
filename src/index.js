@@ -1,5 +1,10 @@
 const canvas = document.getElementById('window');
 const ctx = canvas.getContext('2d');
+const button = document.querySelector("#restartButton");
+const text = document.querySelector("#scoreText"); 
+
+let score = 0;  
+let refresh = 8;
 
 class snakePart {
 	constructor(x, y) {
@@ -8,13 +13,9 @@ class snakePart {
 	}
 }
 
-let score = 0;  
-
 //position serpent 
 let xSnake = canvas.width / 2;
-let ySnake = canvas.width / 2;
-
-let refresh = 8;
+let ySnake = canvas.height / 2;
 
 //stat serpent
 let health = 5;
@@ -31,13 +32,23 @@ let yWaterDrop = 0;
 let sizeWaterDrop = 30;
 let isThere = false;
 
-function gameOver() {
-	clearTimeout(id);
+function restart() {
+	window.location.reload();
+}
+
+function gameOver(idTimeout) {
+	clearTimeout(idTimeout);
+	console.log("hey");
+
+	ctx.font = "50px MV Boli";
+	ctx.fillStyle = "red";
+	ctx.textAlign = "center";
+	ctx.fillText("Game Over !", canvas.width / 2, canvas.height / 2);
 } 
 
 function gameLoop() {
-	initScreen();
-	let id = setTimeout(gameLoop, 1000 / refresh);
+	let idTimeout = setTimeout(gameLoop, 1000 / refresh);
+	initScreen(idTimeout);
 }
 
 //pas encore dispo
@@ -48,12 +59,12 @@ function speed() {
 	}
 }
 
-function initScreen() {
+function initScreen(idTimeout) {
 	const background = new Image(); 
-	background.onload = initBackground(background);
+	background.onload = initBackground(background, idTimeout);
 } 
 
-function initBackground(background) {
+function initBackground(background, idTimeout) {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	background.src = 'images/background.png';
 	ctx.drawImage(background, 0, 0, 
@@ -63,6 +74,7 @@ function initBackground(background) {
 		sizeTail++;
 		isThere = false; 
 		score++;
+		text.textContent = "Score: " + score;
 		//speed();
 	}
 	sapwnWaterDrop();
@@ -71,9 +83,9 @@ function initBackground(background) {
 	mooveSnake();
 	if(checkCollisionWithBordureWindow() ||
 		checkCollisionWithTail()) {
-		gameOver();
+		gameOver(idTimeout);
 	}
-	printCoordonne();
+	//printCoordonne();
 }
 
 function sapwnWaterDrop() {

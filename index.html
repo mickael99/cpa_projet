@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang = "fr">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset = "UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE-edge">
+        <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
         <title>Snake_Desert_Game</title>
         <link rel="stylesheet" href="css/style.css">
     </head>
@@ -10,7 +11,11 @@
     <h1>Snake Desert Game</h1>
 
     <body>
-        <canvas id="window" width="500" height="500"/>
-        <script src="src/index.js"></script>
+        <div id = "gameContainer">
+            <canvas id = "window" width = "600" height = "400"/></canvas>
+            <div id = "scoreText">Score: 0</div>
+            <button id = "restartButton" onclick="restart()">Restart</button>
+        </div>
+        <script src = "src/index.js"></script>
     </body>
 </html>
