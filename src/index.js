@@ -1,12 +1,52 @@
 const canvas = document.getElementById('window');
 const ctx = canvas.getContext('2d');
 const button = document.querySelector("#restartButton");
-const text = document.querySelector("#scoreText"); 
+
+//text
+const scoreText = document.querySelector("#scoreText"); 
+const healthText = document.querySelector("#healthText");
+
+//musiques
+const water_drop_sound = new Audio();
+water_drop_sound.src = "sounds/water_drop.mp3";
+
+const game_music = new Audio();
+game_music.src = "sounds/desert.m4a";
+
+const cactusSound = new Audio();
+cactusSound.src = "sounds/cactus.mp3";
+
+const gameOverMusic = new Audio();
+gameOverMusic.src = "sounds/game_over.mp3";
+
+const hearthMusic = new Audio();
+hearthMusic.src = "sounds/hearth.mp3";
+
+/*
+const game_over_sound = new Audio();
+game_over_sound.src = "no_life.m4a";
+*/
 
 let score = 0;  
 let refresh = 8;
 
+let isInvincible = false;
+
 class snakePart {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+}
+
+class cactus {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+}
+
+class hearth {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
@@ -18,7 +58,7 @@ let xSnake = canvas.width / 2;
 let ySnake = canvas.height / 2;
 
 //stat serpent
-let health = 5;
+let health = 3;
 let velocity = 20;  
 let dx = 0; 
 let dy = 0;
@@ -29,8 +69,19 @@ let sizeTail = 0;
 //goutte d'eau
 let xWaterDrop = 0;
 let yWaterDrop = 0; 
-let sizeWaterDrop = 30;
+let sizeWaterDrop = 40;
 let isThere = false;
+
+//cactus
+let arrayCactus = [];
+let sizeCactus = 40;
+let nbCactus = 0;
+
+//cactus
+let arrayHearth = [];
+let sizeHearth = 40;
+let maxHearth = 0;
+let nbHearth = 0;
 
 function restart() {
 	window.location.reload();
@@ -38,12 +89,16 @@ function restart() {
 
 function gameOver(idTimeout) {
 	clearTimeout(idTimeout);
-	console.log("hey");
+
+	game_music.pause();
 
 	ctx.font = "50px MV Boli";
 	ctx.fillStyle = "red";
 	ctx.textAlign = "center";
 	ctx.fillText("Game Over !", canvas.width / 2, canvas.height / 2);
+
+	console.log("vitesse -> " + refresh);
+	gameOverMusic.play();
 } 
 
 function gameLoop() {
@@ -54,8 +109,8 @@ function gameLoop() {
 //pas encore dispo
 function speed() {
 	let random = Math.random(); 
-	if(random > 0.5) { 
-		velocity += 1;
+	if(random > 0.3 && refresh < 30) { 
+		refresh += 0.5;
 	}
 }
 
@@ -65,6 +120,7 @@ function initScreen(idTimeout) {
 } 
 
 function initBackground(background, idTimeout) {
+	game_music.play();
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	background.src = 'images/background.png';
 	ctx.drawImage(background, 0, 0, 
@@ -74,18 +130,73 @@ function initBackground(background, idTimeout) {
 		sizeTail++;
 		isThere = false; 
 		score++;
-		text.textContent = "Score: " + score;
-		//speed();
+		scoreText.textContent = "Score: " + score;
+		speed();
 	}
 	sapwnWaterDrop();
+
+	let collisionCactus = checkCollisionWithCactus();
+	if(collisionCactus != -1) {
+		cactusSound.play();
+		looseLife();
+		arrayCactus.splice(collisionCactus, 1);
+		nbCactus--;
+	}
+	spawnCactus();
 	initSnake();
 	spawnSnakePart();
 	mooveSnake();
 	if(checkCollisionWithBordureWindow() ||
-		checkCollisionWithTail()) {
+		checkCollisionWithTail() || 
+		health <= 0) {
 		gameOver(idTimeout);
 	}
 	//printCoordonne();
+}
+
+function looseLife() {
+	health--;
+	healthText.textContent = "Vie: " + health;
+}
+
+function spawnHearth() {
+	if(nbHearth < maxHearth) {
+		do {
+			let newHearth = new hearth(Math.floor(Math.random() * (canvas.width - sizeCactus)),
+				Math.random() * (canvas.height - sizeCactus));
+			
+		}while(checkCollisionWithTwoSquares(newHearth.x, newHearth.y, sizeHearth,
+				xSnake - 50, ySnake - 50, sizeSnake + 100) &&
+				checkCollisionWithTwoSquares(newHearth.x, newHearth.y, sizeHearth,
+				xWaterDrop - 10, yWaterDrop - 10, sizeWaterDrop + 20));
+	}
+}
+
+function spawnCactus() {
+	//ajout nouveau cactus
+	let maxCactus = Math.floor(score / 10);
+	if(nbCactus < maxCactus) {
+		do
+			newCactus = new cactus(Math.floor(Math.random() * (canvas.width - sizeCactus)),
+												Math.random() * (canvas.height - sizeCactus));
+		while(checkCollisionWithTwoSquares(newCactus.x, newCactus.y, sizeCactus,
+				xSnake - 50, ySnake - 50, sizeSnake + 100) &&
+			  checkCollisionWithTwoSquares(newCactus.x, newCactus.y, sizeCactus,
+				xWaterDrop - 10, yWaterDrop - 10, sizeWaterDrop + 20));
+		arrayCactus.push(newCactus);
+		nbCactus++;
+	}
+	
+	//affichage de tous les cactus
+	for(let i = 0; i < arrayCactus.length; i++) {
+		let cactusImage = new Image();
+		cactusImage.src = "images/cactus.png";
+
+		cactusImage.onload = function() {
+			ctx.drawImage(cactusImage, arrayCactus[i].x, 
+				arrayCactus[i].y, sizeCactus, sizeCactus);
+		}
+	}
 }
 
 function sapwnWaterDrop() {
@@ -95,9 +206,10 @@ function sapwnWaterDrop() {
 		yWaterDrop = Math.floor(Math.random() * 
 			(canvas.height - sizeWaterDrop));
 	}
-	
+
 	let waterDrop = new Image();  
 	waterDrop.src = 'images/water_drop.png';
+	
 	waterDrop.onload = function() {
 		ctx.drawImage(waterDrop, xWaterDrop, 
 			yWaterDrop, sizeWaterDrop, sizeWaterDrop);
@@ -146,6 +258,16 @@ function mooveSnake() {
 	ySnake += dy;
 }
 
+function checkCollisionWithTwoSquares(x1, y1, size1, x2, y2, size2) {
+	if((x1 + size1 > x2) && 
+		(x1 < x2 + size2) &&
+		(y1 + size1 > y2) &&
+		(y1 < y2 + size2)) {
+			return true;
+	}
+	return false;
+}
+
 function checkCollisionWithBordureWindow() {
 	//colision avec le haut de la fenetre
 	if(ySnake < 0)
@@ -167,13 +289,36 @@ function checkCollisionWithBordureWindow() {
 }
 
 function checkCollisionWithWaterDrop() {
-	if((xWaterDrop - xSnake < sizeSnake) && 
-		(xSnake - xWaterDrop < sizeSnake) &&
-		(ySnake + sizeSnake > yWaterDrop) &&
-		(ySnake < yWaterDrop + sizeWaterDrop)) {
-			return true;
+	if(checkCollisionWithTwoSquares(xSnake, ySnake, sizeSnake, xWaterDrop, yWaterDrop, sizeWaterDrop)) {
+		water_drop_sound.pause();
+		setTimeout(function() {
+			water_drop_sound.play();
+		}, 100);
+		return true;
 	}
 	return false;
+}
+
+function checkCollisionWithHeart() {
+	for(let i = 0; i < arrayHearth.length; i++) {
+		if(checkCollisionWithTwoSquares(xSnake, ySnake, sizeSnake,
+								 			arrayHearth[i].x, arrayHearth[i].y, sizeHearth))
+			return i;
+	}
+	return -1;
+}
+
+function checkCollisionWithCactus() {
+	console.log("taille -> " + arrayCactus.length);
+	for(let i = 0; i < arrayCactus.length; i++) {
+		console.log("erreur !");
+		if(checkCollisionWithTwoSquares(xSnake, ySnake, sizeSnake, 
+											arrayCactus[i].x, arrayCactus[i].y, sizeCactus)) {
+			console.log("collision avec " + i);
+			return i;
+		}
+	}
+	return -1;
 }
 
 function checkCollisionWithTail() {
