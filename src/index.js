@@ -44,27 +44,27 @@ class cactus {
 let xSnake = canvas.width / 2;
 let ySnake = canvas.height / 2;
 let health = 3; 
-let dx = 0; //1 si il va a droite, -1 si il va à gauche, 0 sinon 
-let dy = 0; //1 si il va en bas, -1 si il va en haut, 0 sinon
-let sizeSnake = 20;
+let dx = 0; //positif si il va a droite, negatif si il va à gauche, 0 sinon 
+let dy = 0; //positif si il va en bas, negatif si il va en haut, 0 sinon
+const sizeSnake = 20;
 let snakeTail = [];
 let sizeTail = 0;
 
 //goutte d'eau(spawn instantané)
 let xWaterDrop = 0;
 let yWaterDrop = 0; 
-let sizeWaterDrop = 40;
+const sizeWaterDrop = 40;
 let waterIsThere = false; //vrai si la goutte d'eau est toujours sur l'écran
 
 //cactus(1 cactus supplémentaire tous les 10 points)
 let arrayCactus = [];
-let sizeCactus = 40;
+const sizeCactus = 40;
 let nbCactus = 0; //nombre de cactus présents dans le jeu
 
 //coeur(1 / 3 chance qu'un coeur apparaisse tous les 20 points)
 let xHearth = 0;
 let yHearth = 0;
-let sizeHearth = 40;
+const sizeHearth = 40;
 let hearthIsThere = false; //vrai si le coeur est présent dans le jeu
 let isHearthSpawnOnce = false; //vrai si on a déja tenté de faire apparaître le coeur
 
@@ -163,7 +163,7 @@ function gameManage(background, idTimeout) {
 	}
 
 	//dessin des images
-	sapwnWaterDrop();
+	spawnWaterDrop();
 	spawnCactus();
 	spawnHearth();
 	initSnake();
@@ -290,7 +290,7 @@ function spawnCactus() {
 /**
  * des que le joueur récupère une goutte d'eau, une nouvelle apparait
  */
-function sapwnWaterDrop() {
+function spawnWaterDrop() {
 	if(waterIsThere == false) {
 		//on évite les collisions avec le serpent (j'ai choisi de me limiter à cela)
 		do {
